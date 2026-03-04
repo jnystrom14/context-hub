@@ -56,7 +56,7 @@ describe('chub CLI e2e', () => {
 
     it('registry has correct counts', () => {
       const reg = JSON.parse(readFileSync(join(BUILD_OUTPUT, 'registry.json'), 'utf8'));
-      expect(reg.docs.length).toBe(2); // acme/widgets + multilang/client
+      expect(reg.docs.length).toBe(3); // acme/widgets + acme/versioned-api + multilang/client
       expect(reg.skills.length).toBe(1); // testskills/deploy
     });
 
@@ -67,7 +67,7 @@ describe('chub CLI e2e', () => {
 
     it('validates with --validate-only', () => {
       const out = chub(['build', FIXTURES, '--validate-only']);
-      expect(out).toContain('2 docs');
+      expect(out).toContain('3 docs');
       expect(out).toContain('1 skills');
     });
 
@@ -80,7 +80,7 @@ describe('chub CLI e2e', () => {
   describe('search', () => {
     it('lists all entries', () => {
       const data = chubJSON(['search']);
-      expect(data.total).toBe(3); // 2 docs + 1 skill
+      expect(data.total).toBe(4); // 3 docs + 1 skill
     });
 
     it('fuzzy search finds by name', () => {
@@ -198,6 +198,37 @@ describe('chub CLI e2e', () => {
     it('--json omits additionalFiles when none exist', () => {
       const data = chubJSON(['get', 'multilang/client', '--lang', 'js']);
       expect(data.additionalFiles).toBeUndefined();
+    });
+
+    // Multi-version tests
+    it('build groups multi-version docs correctly', () => {
+      const reg = JSON.parse(readFileSync(join(BUILD_OUTPUT, 'registry.json'), 'utf8'));
+      const doc = reg.docs.find((d) => d.id === 'acme/versioned-api');
+      expect(doc).toBeDefined();
+      const jsLang = doc.languages.find((l) => l.language === 'javascript');
+      expect(jsLang.versions.length).toBe(2);
+      expect(jsLang.versions.map((v) => v.version)).toContain('2.0.0');
+      expect(jsLang.versions.map((v) => v.version)).toContain('1.0.0');
+      expect(jsLang.recommendedVersion).toBe('2.0.0');
+    });
+
+    it('fetches recommended (latest) version by default', () => {
+      const out = chub(['get', 'acme/versioned-api']);
+      expect(out).toContain('Versioned API v2');
+      expect(out).toContain('version 2.0.0');
+    });
+
+    it('fetches specific version with --version', () => {
+      const out = chub(['get', 'acme/versioned-api', '--version', '1.0.0']);
+      expect(out).toContain('Versioned API v1');
+      expect(out).toContain('version 1.0.0');
+    });
+
+    it('errors on nonexistent version with available list', () => {
+      const out = chub(['get', 'acme/versioned-api', '--version', '99.0.0'], { expectError: true });
+      expect(out).toContain('Version "99.0.0" not found');
+      expect(out).toContain('2.0.0');
+      expect(out).toContain('1.0.0');
     });
   });
 

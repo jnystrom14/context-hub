@@ -331,6 +331,13 @@ export function resolveDocPath(entry, language, version) {
   let verObj = null;
   if (version) {
     verObj = langObj.versions?.find((v) => v.version === version);
+    if (!verObj) {
+      return {
+        versionNotFound: true,
+        requested: version,
+        available: langObj.versions?.map((v) => v.version) || [],
+      };
+    }
   } else {
     const rec = langObj.recommendedVersion;
     verObj = langObj.versions?.find((v) => v.version === rec) || langObj.versions?.[0];
@@ -348,7 +355,7 @@ export function resolveDocPath(entry, language, version) {
  * Given a resolved path and a type ("doc" or "skill"), return the entry file path.
  */
 export function resolveEntryFile(resolved, type) {
-  if (!resolved || resolved.needsLanguage) return { error: 'unresolved' };
+  if (!resolved || resolved.needsLanguage || resolved.versionNotFound) return { error: 'unresolved' };
 
   const fileName = type === 'skill' ? 'SKILL.md' : 'DOC.md';
 

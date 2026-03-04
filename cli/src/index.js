@@ -78,7 +78,7 @@ const program = new Command();
 program
   .name('chub')
   .description('Context Hub - search and retrieve LLM-optimized docs and skills')
-  .version(pkg.version)
+  .version(pkg.version, '-V, --cli-version')
   .option('--json', 'Output as JSON (machine-readable)')
   .action(() => {
     printUsage();

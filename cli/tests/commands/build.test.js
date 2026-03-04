@@ -29,8 +29,8 @@ describe('chub build', () => {
     );
 
     const parsed = JSON.parse(result.trim());
-    // test/fixtures has 2 docs (acme/widgets, multilang/client) and 1 skill (testskills/deploy)
-    expect(parsed.docs).toBe(2);
+    // test/fixtures has 3 docs (acme/widgets, acme/versioned-api, multilang/client) and 1 skill (testskills/deploy)
+    expect(parsed.docs).toBe(3);
     expect(parsed.skills).toBe(1);
   });
 

@@ -36,6 +36,13 @@ async function fetchEntries(ids, opts, globalOpts) {
       error(`Could not resolve path for "${id}" ${opts.lang || ''} ${opts.version || ''}`.trim(), globalOpts);
     }
 
+    if (resolved.versionNotFound) {
+      error(
+        `Version "${resolved.requested}" not found for "${id}". Available versions: ${resolved.available.join(', ')}`,
+        globalOpts
+      );
+    }
+
     if (resolved.needsLanguage) {
       error(
         `Multiple languages available for "${id}": ${resolved.available.join(', ')}. Specify --lang.`,

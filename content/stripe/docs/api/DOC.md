@@ -4,6 +4,7 @@ description: "Payment processing platform with comprehensive payment and billing
 metadata:
   languages: "javascript"
   versions: "19.1.0"
+  revision: 1
   updated-on: "2025-10-28"
   source: maintainer
   tags: "stripe,api,payments,billing"

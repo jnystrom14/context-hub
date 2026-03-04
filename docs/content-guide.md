@@ -19,6 +19,11 @@ my-content/
           DOC.md                  # multi-language: JS variant
         python/
           DOC.md                  # multi-language: Python variant
+      api/
+        v1/
+          DOC.md                  # multi-version: v1
+        v2/
+          DOC.md                  # multi-version: v2
     skills/
       deploy/
         SKILL.md                  # a skill
@@ -40,6 +45,45 @@ Create a subdirectory per language:
 author/docs/entry-name/javascript/DOC.md
 author/docs/entry-name/python/DOC.md
 ```
+
+### Multi-version docs
+
+When an API has breaking changes across major versions, create a subdirectory per version:
+
+```
+author/docs/entry-name/
+  v1/
+    DOC.md                  # versions: "1.0.0"
+  v2/
+    DOC.md                  # versions: "2.0.0"
+```
+
+Both DOC.md files must share the same `name` in frontmatter. The build groups them into a single registry entry with multiple versions. The highest version becomes the `recommendedVersion` — what agents get by default.
+
+You can combine multi-version with multi-language:
+
+```
+author/docs/entry-name/
+  v1/
+    javascript/
+      DOC.md
+    python/
+      DOC.md
+  v2/
+    javascript/
+      DOC.md
+    python/
+      DOC.md
+```
+
+Agents request a specific version with `--version`:
+
+```bash
+chub get author/entry-name                    # latest version (recommended)
+chub get author/entry-name --version 1.0.0    # specific version
+```
+
+If a requested version doesn't exist, the CLI lists available versions.
 
 ### Skills
 
@@ -76,6 +120,7 @@ description: "Acme widget API for creating and managing widgets"
 metadata:
   languages: "javascript"
   versions: "2.0.0"
+  revision: 1
   updated-on: "2026-01-01"
   source: maintainer
   tags: "acme,widgets,api"
@@ -87,8 +132,9 @@ metadata:
 | `name` | Yes | Entry name (used in the ID: `author/name`) |
 | `description` | Yes | Short description for search results |
 | `metadata.languages` | Yes | Language of this doc variant |
-| `metadata.versions` | Yes | Version(s) covered |
-| `metadata.updated-on` | Yes | Last update date |
+| `metadata.versions` | Yes | Package/SDK version this doc covers (the version on npm or pypi) |
+| `metadata.revision` | Yes | Content revision number (monotonically increasing, starts at 1) |
+| `metadata.updated-on` | Yes | Date this content was last revised |
 | `metadata.source` | Yes | Trust level: `official`, `maintainer`, or `community` |
 | `metadata.tags` | No | Comma-separated tags for filtering |
 
@@ -99,6 +145,7 @@ metadata:
 name: deploy
 description: "Deployment automation skill for CI/CD pipelines"
 metadata:
+  revision: 1
   updated-on: "2026-01-01"
   source: community
   tags: "deploy,ci,automation"
@@ -106,6 +153,35 @@ metadata:
 ```
 
 Skills have the same fields as docs except `languages` and `versions` are not required (skills are language-agnostic).
+
+## Versioning Guide
+
+### Package version vs API version
+
+The `versions` field always refers to the **package/SDK version** — the version number on npm or pypi. This is what agents can detect from `package.json` or `requirements.txt`.
+
+If a library has a separate API versioning scheme (like Stripe's dated API versions `2024-12-18.acacia`), document that within the content body. The frontmatter `versions` stays as the package version.
+
+### API-level versioning
+
+When an API has fundamentally different versions (different endpoints, different auth, different request/response shapes), use the entry **name** to distinguish them:
+
+```
+stripe/docs/payments-api-v1/DOC.md    # name: payments-api-v1
+stripe/docs/payments-api-v2/DOC.md    # name: payments-api-v2
+```
+
+These become separate entries in the registry (`stripe/payments-api-v1` and `stripe/payments-api-v2`), each with their own package version tracking.
+
+### Updating content
+
+When you improve content for the same package version (fix examples, add details, clarify wording):
+
+1. Bump `revision` (e.g., 1 → 2)
+2. Update `updated-on` to today's date
+3. Keep `versions` the same
+
+Together, `revision` and `updated-on` give agents a clear signal of content freshness.
 
 ## Writing Content
 
