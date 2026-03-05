@@ -30,7 +30,7 @@ describe('loadConfig', () => {
     const config = loadConfig();
 
     expect(config.output_dir).toBe('.context');
-    expect(config.refresh_interval).toBe(86400);
+    expect(config.refresh_interval).toBe(21600);
     expect(config.output_format).toBe('human');
     expect(config.source).toBe('official,maintainer,community');
   });
